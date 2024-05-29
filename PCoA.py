@@ -47,3 +47,51 @@ fig.update_traces(textposition='top center')
 
 # Show the plot
 fig.show()
+
+
+
+
+
+import numpy as np
+import plotly.express as px
+from sklearn.manifold import MDS
+
+# Sample data creation
+# Note: Replace this sample data with actual data if available.
+# Simulating data structure for demonstration
+categories = ['No-take', 'Open fishing', 'Limited access']
+management_status = ['Before management', 'After management']
+points_per_category = 10
+
+np.random.seed(42)
+data = []
+
+for status in management_status:
+    for category in categories:
+        for _ in range(points_per_category):
+            x, y = np.random.normal(loc=0.0, scale=0.5, size=2)
+            data.append([x, y, category, status])
+
+data = np.array(data)
+
+# Performing NMDS
+nmds = MDS(n_components=2, random_state=42, dissimilarity='euclidean')
+nmds_fit = nmds.fit_transform(data[:, :2].astype(float))
+
+# Convert to a DataFrame for Plotly
+import pandas as pd
+
+df = pd.DataFrame(nmds_fit, columns=['NMDS1', 'NMDS2'])
+df['Category'] = data[:, 2]
+df['Status'] = data[:, 3]
+
+# Plotting with Plotly
+fig = px.scatter(df, x='NMDS1', y='NMDS2', color='Category', symbol='Status',
+                 title='NMDS Plot Before and After Management',
+                 labels={'NMDS1': 'NMDS1', 'NMDS2': 'NMDS2'},
+                 category_orders={'Category': categories, 'Status': management_status})
+
+fig.show()
+
+
+
