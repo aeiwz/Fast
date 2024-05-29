@@ -312,3 +312,44 @@ fig.update_layout(
 
 # Show the plot
 fig.show()
+
+
+# Sort columns
+# Define the desired order of time points
+time_points = ['Day -1', 'Day 0', 'Day 1', 'Day 14']
+
+# Initialize the subplot figure
+fig = make_subplots(rows=1, cols=4, subplot_titles=time_points)
+
+# Generate 100% stacked bar plots for each time point
+for idx, time_point in enumerate(time_points, start=1):
+    # Filter the dataframe for the current time point
+    df_time = df_top20[df_top20['Time point'] == time_point]
+    
+    # Sum the counts for each group, considering only numeric columns
+    group_sums = df_time.groupby('Group').sum(numeric_only=True).reset_index()
+    
+    # Normalize the counts to percentages
+    group_sums.iloc[:, 1:] = group_sums.iloc[:, 1:].div(group_sums.iloc[:, 1:].sum(axis=1), axis=0) * 100
+    
+    # Add a stacked bar trace for each group
+    for col in group_sums.columns[1:]:
+        fig.add_trace(
+            go.Bar(
+                x=group_sums['Group'],
+                y=group_sums[col],
+                name=col,
+                marker_color=genus_colors[col],
+                showlegend=(idx == 1)  # Show legend only for the first subplot
+            ),
+            row=1, col=idx
+        )
+
+# Update layout
+fig.update_layout(
+    title_text="100% Stacked Bar Plot of Top 20 Alpha Abundance by Time Point",
+    barmode='stack'
+)
+
+# Show the plot
+fig.show()
