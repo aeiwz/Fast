@@ -52,3 +52,88 @@ ax.legend(title='Phylum', bbox_to_anchor=(0.5, -0.2), loc='upper center', ncol=5
 
 plt.tight_layout()
 plt.show()
+
+
+
+
+import pandas as pd
+
+# Load the CSV file to see its contents
+file_path = '/mnt/data/Transpost-wf-16s-counts-genus.csv'
+df = pd.read_csv(file_path)
+
+# Display the first few rows of the dataframe
+df.head()
+
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+
+# Get unique time points and groups
+time_points = df['Time point'].unique()
+groups = df['Group'].unique()
+
+# Initialize the subplot figure
+fig = make_subplots(rows=1, cols=4, subplot_titles=time_points)
+
+# Generate stacked bar plots for each time point
+for idx, time_point in enumerate(time_points, start=1):
+    # Filter the dataframe for the current time point
+    df_time = df[df['Time point'] == time_point]
+    
+    # Sum the counts for each group
+    group_sums = df_time.groupby('Group').sum().reset_index()
+    
+    # Add a stacked bar trace for each group
+    for col in group_sums.columns[1:]:
+        fig.add_trace(
+            go.Bar(
+                x=group_sums['Group'],
+                y=group_sums[col],
+                name=col,
+                showlegend=(idx == 1)  # Show legend only for the first subplot
+            ),
+            row=1, col=idx
+        )
+
+# Update layout
+fig.update_layout(
+    title_text="Alpha Abundance Stacked Bar Plot by Time Point",
+    barmode='stack'
+)
+
+# Show the plot
+fig.show()
+
+
+# Fix the warning by selecting only numeric columns for aggregation
+# Re-initialize the subplot figure
+fig = make_subplots(rows=1, cols=4, subplot_titles=time_points)
+
+# Generate stacked bar plots for each time point
+for idx, time_point in enumerate(time_points, start=1):
+    # Filter the dataframe for the current time point
+    df_time = df[df['Time point'] == time_point]
+    
+    # Sum the counts for each group, considering only numeric columns
+    group_sums = df_time.groupby('Group').sum(numeric_only=True).reset_index()
+    
+    # Add a stacked bar trace for each group
+    for col in group_sums.columns[1:]:
+        fig.add_trace(
+            go.Bar(
+                x=group_sums['Group'],
+                y=group_sums[col],
+                name=col,
+                showlegend=(idx == 1)  # Show legend only for the first subplot
+            ),
+            row=1, col=idx
+        )
+
+# Update layout
+fig.update_layout(
+    title_text="Alpha Abundance Stacked Bar Plot by Time Point",
+    barmode='stack'
+)
+
+# Show the plot
+fig.show()
