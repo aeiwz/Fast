@@ -137,3 +137,54 @@ fig.update_layout(
 
 # Show the plot
 fig.show()
+
+
+
+#100% scale
+
+import pandas as pd
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+
+# Load the CSV file
+file_path = 'path_to_your_file/Transpost-wf-16s-counts-genus.csv'
+df = pd.read_csv(file_path)
+
+# Get unique time points and groups
+time_points = df['Time point'].unique()
+groups = df['Group'].unique()
+
+# Initialize the subplot figure
+fig = make_subplots(rows=1, cols=4, subplot_titles=time_points)
+
+# Generate stacked bar plots for each time point
+for idx, time_point in enumerate(time_points, start=1):
+    # Filter the dataframe for the current time point
+    df_time = df[df['Time point'] == time_point]
+    
+    # Sum the counts for each group, considering only numeric columns
+    group_sums = df_time.groupby('Group').sum(numeric_only=True).reset_index()
+    
+    # Normalize the counts to percentages
+    group_sums.iloc[:, 1:] = group_sums.iloc[:, 1:].div(group_sums.iloc[:, 1:].sum(axis=1), axis=0) * 100
+    
+    # Add a stacked bar trace for each group
+    for col in group_sums.columns[1:]:
+        fig.add_trace(
+            go.Bar(
+                x=group_sums['Group'],
+                y=group_sums[col],
+                name=col,
+                showlegend=(idx == 1)  # Show legend only for the first subplot
+            ),
+            row=1, col=idx
+        )
+
+# Update layout
+fig.update_layout(
+    title_text="100% Stacked Bar Plot of Alpha Abundance by Time Point",
+    barmode='stack'
+)
+
+# Show the plot
+fig.show()
